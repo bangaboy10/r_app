@@ -11,9 +11,8 @@ def extract_text_from_image(file):
     image = Image.open(file)
     return pytesseract.image_to_string(image)
 
-# ✅ Updated: file_path argument
 def extract_text_from_pdf(file_path):
-    pages = convert_from_path(file_path)  # file_path is a string
+    pages = convert_from_path(file_path)  # ✅ Expects a file path (not BytesIO)
     text = ""
     for page in pages:
         text += pytesseract.image_to_string(page)
@@ -28,5 +27,5 @@ def parse_receipt_text(text):
         "vendor": vendor[0] if vendor else "Unknown",
         "date": datetime.strptime(date[0], "%d/%m/%Y") if date else datetime.now(),
         "amount": float(amount[0]) if amount else 0.0,
-        "category": "Auto"
+        "category": "Auto"  # Optionally map by vendor
     }
