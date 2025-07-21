@@ -10,26 +10,27 @@ st.title("📄 Receipt & Bill Analyzer")
 # Initialize database
 database.init_db()
 
-# Upload file
+# File uploader
 uploaded_file = st.file_uploader("Upload receipt (.jpg, .png, .pdf)", type=["jpg", "png", "pdf"])
 
 if uploaded_file:
     file_ext = uploaded_file.name.split(".")[-1].lower()
     text = ""
 
-    # Handle image
+    # For image files
     if file_ext in ['jpg', 'png']:
         text = processor.extract_text_from_image(uploaded_file)
 
-    # Handle PDF
+    # For PDF files
     elif file_ext == 'pdf':
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
             temp_file.write(uploaded_file.read())
             temp_file_path = temp_file.name
 
+        # ✅ Pass file path (not BytesIO) to processor
+        st.info(f"Processing PDF from: {temp_file_path}")
         text = processor.extract_text_from_pdf(temp_file_path)
 
-    # Show extracted text
     st.subheader("🔍 Extracted Text")
     st.text(text)
 
@@ -42,15 +43,15 @@ if uploaded_file:
     try:
         receipt = models.ReceiptData(**parsed)
         database.insert_receipt(receipt)
-        st.success("✅ Receipt saved to database!")
+        st.success("✅ Receipt saved!")
     except Exception as e:
         st.error(f"❌ Error saving receipt: {e}")
 
-# Fetch and display all records
+# Fetch and display data
 data = database.get_all_receipts()
 if data:
     df = utils.receipts_to_df(data)
-    
+
     st.subheader("📋 All Receipts")
     st.dataframe(df)
 
